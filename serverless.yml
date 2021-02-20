@@ -17,3 +17,6 @@ functions:
       - httpApi:
           path: /hello
           method: GET
+      - httpApi:
+          path: /hello
+          method: POST
