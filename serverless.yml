@@ -1,12 +1,13 @@
 org: drewjwyatt
 app: visualping-messenger
-service: to-mms
+service: visualping
 
 provider:
   name: aws
   runtime: nodejs10.x
 
 plugins:
+  - serverless-dotenv-plugin
   - serverless-offline
   - serverless-plugin-typescript
 
@@ -15,8 +16,5 @@ functions:
     handler: src/handler.handler
     events:
       - httpApi:
-          path: /hello
-          method: GET
-      - httpApi:
-          path: /hello
+          path: /to-mms
           method: POST
