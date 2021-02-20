@@ -1,0 +1,15 @@
+{
+  "name": "visualping-messenger",
+  "version": "0.1.0",
+  "description": "forward visualpings to sms/mms",
+  "license": "MIT",
+  "author": "Drew Wyatt <drew.j.wyatt@gmail.com>",
+  "scripts": {
+    "dev": "serverless offline",
+    "deploy": "serverless deploy"
+  },
+  "devDependencies": {
+    "serverless": "^2.25.2",
+    "serverless-offline": "^6.8.0"
+  }
+}
