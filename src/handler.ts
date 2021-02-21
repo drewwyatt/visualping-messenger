@@ -5,8 +5,8 @@ import { pipe } from 'fp-ts/function'
 import { sendMessage, toMessage } from './messenger'
 import { toVisualPingNotification } from './models'
 
-export const handler: APIGatewayProxyHandler = async event => {
-  const result = await pipe(
+export const handler: APIGatewayProxyHandler = async event =>
+  pipe(
     toVisualPingNotification(event.body),
     chain(toMessage),
     fold(
@@ -48,7 +48,3 @@ export const handler: APIGatewayProxyHandler = async event => {
       },
     ),
   )()
-
-  console.log('result!', result)
-  return result
-}
