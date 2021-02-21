@@ -1,47 +1,54 @@
 import type { APIGatewayProxyHandler } from 'aws-lambda'
-import twilio from 'twilio'
-import { MessageListInstanceCreateOptions } from 'twilio/lib/rest/api/v2010/account/message'
-import {
-  TWILIO_AUTH_TOKEN,
-  TWILIO_SID,
-  TWILIO_FROM_NUMBER,
-  TWILIO_TO_NUMBER,
-} from './env'
+import { chain, fold } from 'fp-ts/TaskEither'
+import { pipe } from 'fp-ts/function'
 
-const client = twilio(TWILIO_SID, TWILIO_AUTH_TOKEN)
-
-const message: MessageListInstanceCreateOptions = {
-  to: TWILIO_TO_NUMBER,
-  from: TWILIO_FROM_NUMBER,
-  body: 'wow, neat',
-}
+import { sendMessage, toMessage } from './messenger'
+import { toVisualPingNotification } from './models'
 
 export const handler: APIGatewayProxyHandler = async event => {
-  console.log('sending message...')
-  const response = await client.messages.create(message)
-  console.log('sent?')
-  console.log(response)
+  const result = await pipe(
+    toVisualPingNotification(event.body),
+    chain(toMessage),
+    fold(
+      (err: unknown) => () => {
+        if (err instanceof Error) {
+          console.error(err.message)
+        } else {
+          console.error(err)
+        }
+        return Promise.resolve({
+          body: JSON.stringify({
+            reason: 'Invalid request',
+            received: event.body,
+          }),
+          statusCode: 400,
+        })
+      },
+      message => async () => {
+        try {
+          console.log('got message!', message)
+          await sendMessage(message)
+          return {
+            statusCode: 200,
+            body: 'it worked!',
+          }
+        } catch (err: unknown) {
+          console.error('Error sending message.')
+          if (err instanceof Error) {
+            console.error(err.message)
+          } else {
+            console.error(err)
+          }
 
-  const eventDetails = JSON.stringify(
-    {
-      body: event.body,
-      headers: event.headers,
-      method: event.httpMethod,
-      path: event.path,
-      pathParameters: event.pathParameters,
-      queryString: event.queryStringParameters,
-    },
-    null,
-    2,
-  )
+          return {
+            body: String(err),
+            statusCode: 500,
+          }
+        }
+      },
+    ),
+  )()
 
-  console.log(eventDetails)
-
-  return {
-    body: eventDetails,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    statusCode: 200,
-  }
+  console.log('result!', result)
+  return result
 }
