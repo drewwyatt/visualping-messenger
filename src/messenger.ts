@@ -31,7 +31,7 @@ export const toMessage = (
     to: TWILIO_TO_NUMBER,
     from: TWILIO_FROM_NUMBER,
     mediaUrl,
-    body: `VisualPing: ${notification.change} detected at ${notification.url}`,
+    body: `VisualPing: ${notification.change} change detected at ${notification.url}`,
   })
 }
 
